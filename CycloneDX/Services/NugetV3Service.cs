@@ -470,8 +470,12 @@ namespace CycloneDX.Services
             {
                 var packageVersion = new NuGetVersion(version);
                 await using MemoryStream packageStream = new MemoryStream();
-                await resource.CopyNupkgToStreamAsync(name, packageVersion, packageStream, _sourceCacheContext,
-                    _logger, _cancellationToken);
+                if (!await resource.CopyNupkgToStreamAsync(name, packageVersion, packageStream,
+                        _sourceCacheContext, _logger, _cancellationToken))
+                {
+                    Console.Error.WriteLine($"Unable to find the requested nuget package: {name} - {version}");
+                    throw new InvalidDataException("Nuget package not found");
+                }
 
                 try
                 {
